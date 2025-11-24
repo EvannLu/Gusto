@@ -12,28 +12,27 @@ struct GuessingGameView: View {
 
     var body: some View {
         NavigationStack {
+            // Ensure VStack uses all vertical space
             VStack(spacing: 20) {
 
                 if let meal = vm.meal {
                     
-                    //Image sizing using GeometryReader
-                    GeometryReader { geo in
-                        AsyncImage(url: URL(string: meal.strMealThumb ?? "")) { img in
-                            img.resizable().scaledToFill() // scaledToFill to fill the width
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(width: geo.size.width, height: 250) // Use full width, fixed height
-                        .clipped() // Clip to the frame
-                        .cornerRadius(12)
+                    // NEW: Food image for hint
+                    // Removed fixed height constraint and added maxHeight: .infinity to maximize size.
+                    AsyncImage(url: URL(string: meal.strMealThumb ?? "")) { img in
+                        img.resizable().scaledToFit()
+                    } placeholder: {
+                        ProgressView()
                     }
-                    .frame(height: 250) // Set container height
-                    
+                    .frame(maxHeight: .infinity) // Maximize height in the Vstack
+                    .cornerRadius(12)
+
+                    // Hide food name — leave only question
                     Text("Where is this meal from?")
                         .font(.title2)
                         .bold()
 
-                    // Disable buttons once a guess is made
+                    // 2 buttons only
                     ForEach(vm.options, id: \.self) { option in
                         Button(option) {
                             withAnimation(.spring()) {
@@ -41,7 +40,7 @@ struct GuessingGameView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
-                        .disabled(vm.isGuessed) // Disable button after guess
+                        .disabled(vm.isGuessed)
                     }
 
                     if !vm.feedback.characters.isEmpty {
@@ -50,7 +49,7 @@ struct GuessingGameView: View {
                     }
                 }
 
-                // Conditional Button and Disabled state
+                // NEW: Conditional Button and Disabled state
                 if vm.isGameOver {
                     Button("Restart Game") {
                         Task { await vm.restartGame() }
@@ -66,8 +65,10 @@ struct GuessingGameView: View {
 
             }
             .padding()
+            // Ensure VStack itself is maximized within the screen 
+            .frame(maxHeight: .infinity)
             .navigationTitle("Guessing Game")
-            // Display lives in the toolbar 
+            // NEW: Display lives in the toolbar
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Text("Lives: \(vm.lives)")
