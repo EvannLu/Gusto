@@ -8,37 +8,40 @@
 import Foundation
 import Combine
 
-@MainActor
 class FavoritesStore: ObservableObject {
-    @Published var saved: [Meal] = []
 
-    private var fileURL: URL {
-        FileManager.default.urls(for: .documentDirectory,
-                                 in: .userDomainMask).first!
-        .appendingPathComponent("favorites.json")
+    // Auto-save whenever favorites change
+    @Published var saved: [Meal] = [] {
+        didSet { save() }
     }
 
-    init() { load() }
+    private let fileURL: URL
+
+    init() {
+        // Where the JSON file will live
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        self.fileURL = docs.appendingPathComponent("favorites.json")
+
+        load()
+    }
 
     func add(_ meal: Meal) {
-        guard !saved.contains(meal) else { return }
-        saved.append(meal)
-        save()
-    }
-
-    private func save() {
-        do {
-            let data = try JSONEncoder().encode(saved)
-            try data.write(to: fileURL)
-        } catch {
-            print("Error saving:", error)
+        if !saved.contains(meal) {
+            saved.append(meal)
         }
     }
 
+
     private func load() {
-        guard let data = try? Data(contentsOf: fileURL),
-              let decoded = try? JSONDecoder().decode([Meal].self, from: data)
-        else { return }
-        saved = decoded
+        if let data = try? Data(contentsOf: fileURL),
+           let decoded = try? JSONDecoder().decode([Meal].self, from: data) {
+            self.saved = decoded
+        }
+    }
+
+    private func save() {
+        if let data = try? JSONEncoder().encode(saved) {
+            try? data.write(to: fileURL)
+        }
     }
 }

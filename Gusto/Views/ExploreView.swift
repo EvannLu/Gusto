@@ -13,14 +13,32 @@ struct ExploreView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                if vm.isLoading {
-                    Spinner()
-                } else if let meal = vm.meal {
-                    MealCardView(meal: meal)
+            VStack(spacing: 20) {
+
+                if let meal = vm.meal {
+
+                    AsyncImage(url: URL(string: meal.strMealThumb ?? "")) { img in
+                        img.resizable().scaledToFit()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    // Removed the fixed frame(height: 220) to allow the image to scale to the width.
+                    .cornerRadius(12)
+
+                    // NEW: More info under image
+                    Text(meal.strMeal)
+                        .font(.title2).bold()
+
+                    Text("Category: \(meal.strCategory ?? "Unknown")")
+                        .foregroundColor(.secondary)
+
+                    Text("Region: \(meal.strArea ?? "Unknown")")
+                        .foregroundColor(.secondary)
 
                     Button("Save to Favorites") {
-                        withAnimation { favorites.add(meal) }
+                        withAnimation {
+                            favorites.add(meal)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                 }
@@ -28,7 +46,8 @@ struct ExploreView: View {
                 Button("Discover New Recipe") {
                     Task { await vm.loadRandom() }
                 }
-                .padding(.top)
+                .buttonStyle(.bordered)
+
             }
             .padding()
             .navigationTitle("Explore")
