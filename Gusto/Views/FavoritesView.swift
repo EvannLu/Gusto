@@ -6,24 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FavoritesView: View {
-    @EnvironmentObject var favorites: FavoritesStore
+    // Replace @EnvironmentObject with @Query
+    @Query(sort: \Meal.strMeal) private var favorites: [Meal]
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedMeal: Meal?
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(favorites.saved) { meal in
+                // favorites is now the @Query result
+                ForEach(favorites) { meal in
                     MealCardView(meal: meal)
                         .onTapGesture {
                             selectedMeal = meal
                         }
                 }
-                .onDelete { indexSet in
-                    favorites.saved.remove(atOffsets: indexSet)
-                    // REMOVED: favorites.save()  ← Do NOT call this for Option B
-                }
+                .onDelete(perform: deleteMeals) // Call a new delete function
             }
             .navigationTitle("My Cookbook")
             .toolbar {
@@ -31,6 +32,16 @@ struct FavoritesView: View {
             }
             .sheet(item: $selectedMeal) { meal in
                 FavoriteDetailView(meal: meal)
+            }
+        }
+    }
+    
+    // Function to handle SwiftData deletion
+    func deleteMeals(offsets: IndexSet) {
+        withAnimation {
+            for index in offsets {
+                let meal = favorites[index]
+                modelContext.delete(meal)
             }
         }
     }

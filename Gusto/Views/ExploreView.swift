@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ExploreView: View {
     @StateObject private var vm = ExploreViewModel()
-    @EnvironmentObject var favorites: FavoritesStore
+    @EnvironmentObject var favorites: FavoritesStore // Kept as placeholder
+    
+    // NEW: SwiftData Context
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
@@ -22,7 +26,6 @@ struct ExploreView: View {
                     } placeholder: {
                         ProgressView()
                     }
-                    // Removed the fixed frame(height: 220) to allow the image to scale to the width.
                     .cornerRadius(12)
 
                     // NEW: More info under image
@@ -37,7 +40,19 @@ struct ExploreView: View {
 
                     Button("Save to Favorites") {
                         withAnimation {
-                            favorites.add(meal)
+                            // MODIFIED: Use modelContext to insert the new Meal
+                            if let newMeal = vm.meal {
+                                // Extract the ID into a local constant
+                                let mealID = newMeal.idMeal
+                                
+                                // Check if a Meal with this ID already exists (step for preventing duplicates)
+                                // Use the local constant mealID 
+                                let predicate = #Predicate<Meal> { $0.idMeal == mealID }
+                                
+                                if (try? modelContext.fetchCount(FetchDescriptor(predicate: predicate))) == 0 {
+                                     modelContext.insert(newMeal)
+                                }
+                            }
                         }
                     }
                     .buttonStyle(.borderedProminent)

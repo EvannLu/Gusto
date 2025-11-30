@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct GustoApp: App {
-    @StateObject private var favorites = FavoritesStore()
+    // Removed the FavoritesStore StateObject
     @StateObject private var prefs = UserPreferences()
 
     var body: some Scene {
@@ -24,9 +25,10 @@ struct GustoApp: App {
                 FavoritesView()
                     .tabItem { Label("Favorites", systemImage: "heart") }
             }
-            .environmentObject(favorites)
+            // Removed environmentObject(favorites)
             .environmentObject(prefs)
         }
+        // NEW: Add the modelContainer for the Meal model
+        .modelContainer(for: Meal.self)
     }
 }
-
