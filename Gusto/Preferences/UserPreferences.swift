@@ -9,5 +9,5 @@ import SwiftUI
 import Combine
 
 class UserPreferences: ObservableObject {
-    @AppStorage("showHints") var showHints: Bool = true
+    @AppStorage("bestScore") var bestScore: Int = 0
 }

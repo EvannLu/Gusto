@@ -10,9 +10,10 @@ import SwiftData
 
 struct ExploreView: View {
     @StateObject private var vm = ExploreViewModel()
-    @EnvironmentObject var favorites: FavoritesStore // Kept as placeholder
     
-    // NEW: SwiftData Context
+    @EnvironmentObject var favorites: FavoritesStore
+    @EnvironmentObject var filterPrefs: FilterPreferences
+    
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -45,8 +46,7 @@ struct ExploreView: View {
                                 // Extract the ID into a local constant
                                 let mealID = newMeal.idMeal
                                 
-                                // Check if a Meal with this ID already exists (step for preventing duplicates)
-                                // Use the local constant mealID 
+                                // Check if a Meal with this ID already exists
                                 let predicate = #Predicate<Meal> { $0.idMeal == mealID }
                                 
                                 if (try? modelContext.fetchCount(FetchDescriptor(predicate: predicate))) == 0 {
@@ -66,7 +66,11 @@ struct ExploreView: View {
             }
             .padding()
             .navigationTitle("Explore")
-            .task { await vm.loadRandom() }
+            // Call loadRandom() every time the view appears
+            .onAppear {
+                vm.filterPrefs = filterPrefs
+                Task { await vm.loadRandom() }
+            }
         }
     }
 }

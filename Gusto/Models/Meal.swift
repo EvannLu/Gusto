@@ -166,7 +166,7 @@ final class Meal: Identifiable {
 
     var id: String { idMeal }
     
-    // Computed property that returns non-empty "ingredient — measure" strings
+    // Computed property that returns non-empty "ingredient — measure" strings (for UI display)
     var ingredients: [String] {
         var results: [String] = []
         
@@ -194,6 +194,28 @@ final class Meal: Identifiable {
                 } else {
                     results.append(ing)
                 }
+            }
+        }
+        
+        return results
+    }
+
+    // Computed property for filtering (only ingredient names) 
+    var rawIngredientNames: [String] {
+        var results: [String] = []
+        
+        let ingredientList: [String?] = [
+            strIngredient1, strIngredient2, strIngredient3, strIngredient4, strIngredient5,
+            strIngredient6, strIngredient7, strIngredient8, strIngredient9, strIngredient10,
+            strIngredient11, strIngredient12, strIngredient13, strIngredient14, strIngredient15,
+            strIngredient16, strIngredient17, strIngredient18, strIngredient19, strIngredient20
+        ]
+        
+        for i in 0..<20 {
+            let ing = ingredientList[i]?.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            if let ing = ing, !ing.isEmpty {
+                results.append(ing)
             }
         }
         

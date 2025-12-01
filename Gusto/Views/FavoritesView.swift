@@ -14,6 +14,8 @@ struct FavoritesView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedMeal: Meal?
 
+    init() {} 
+    
     var body: some View {
         NavigationStack {
             List {

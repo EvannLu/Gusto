@@ -9,16 +9,33 @@ import SwiftUI
 
 struct GuessingGameView: View {
     @StateObject private var vm = GuessingGameViewModel()
+    
+    @EnvironmentObject var filterPrefs: FilterPreferences
+    @EnvironmentObject var userPrefs: UserPreferences
 
     var body: some View {
         NavigationStack {
             // Ensure VStack uses all vertical space
             VStack(spacing: 20) {
+                
+                // Combined Score and Lives HUD 
+                HStack {
+                    // Current Score
+                    Text("Score: \(vm.currentScore)")
+                        .font(.title3).bold()
+                    
+                    Spacer()
+                    
+                    // Lives Display (Relocated from toolbar)
+                    Text("Lives: \(vm.lives)")
+                        .font(.title3).bold()
+                        .foregroundColor(vm.lives <= 1 ? .red : .primary)
+                }
+                .padding(.horizontal) // Add horizontal padding for a clean look
 
                 if let meal = vm.meal {
                     
                     // NEW: Food image for hint
-                    // Removed fixed height constraint and added maxHeight: .infinity to maximize size.
                     AsyncImage(url: URL(string: meal.strMealThumb ?? "")) { img in
                         img.resizable().scaledToFit()
                     } placeholder: {
@@ -65,18 +82,15 @@ struct GuessingGameView: View {
 
             }
             .padding()
-            // Ensure VStack itself is maximized within the screen 
+            // Ensure VStack itself is maximized within the screen
             .frame(maxHeight: .infinity)
             .navigationTitle("Guessing Game")
-            // NEW: Display lives in the toolbar
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Text("Lives: \(vm.lives)")
-                        .font(.headline)
-                        .foregroundColor(vm.lives <= 1 ? .red : .primary)
-                }
+            // REMOVED: The entire .toolbar section
+            .onAppear {
+                vm.filterPrefs = filterPrefs
+                vm.userPrefs = userPrefs
+                Task { await vm.newRound() }
             }
-            .task { await vm.newRound() }
         }
     }
 }
